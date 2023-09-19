@@ -1,11 +1,15 @@
 import numpy as np
 
-inputs = [1.23, 0.45, 1.51, 1.02]
-weights = [[0.26, 0.88, -0.90, -0.44],
-           [0.13, -0.95, 0.76, 0.22],
-           [0.34, 0.66, 0.5, -0.89]]
+inputs = [1.0, 2.0, 3.0, 2.5]
+weights = [[0.2, 0.8, -0.5, 1],
+           [0.5, -0.91, 0.26, -0.5],
+           [-0.26, -0.27, 0.17, 0.87]]
 
-bias = [0.3, 5.0, 2.0]
+# Make them a np.arrays
+inputs = np.array(inputs)
+weights = np.array(weights)
 
-result = np.dot(inputs, weights) + bias
+bias = [2.0, 3.0, 0.5]
+
+result = np.dot(inputs, weights.T) + bias
 print(result)
