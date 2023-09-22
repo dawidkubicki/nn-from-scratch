@@ -11,11 +11,18 @@ class Dense_Layer:
     def forward(self, inputs):
         self.output = np.dot(inputs, self.weights) + self.biases
 
+class Activation_ReLU:
+    def forward(self, inputs):
+        self.output = np.maximum(0, inputs)
+
 # Create dataset
 X, y = spiral_data(samples=100, classes=3)
 
+# 2 inputs and 3 layers
 dense1 = Dense_Layer(2, 3)
 dense1.forward(X)
 
-print(X.shape)
-print(dense1.output.shape)
+activation_relu = Activation_ReLU()
+activation_relu.forward(dense1.output)
+
+print(activation_relu.output.shape)
