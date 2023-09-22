@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 
 # Helper function for plotting
@@ -27,4 +28,7 @@ def relu(neuron_output):
 # Try it!
 # plot_activation_result(relu)
 
-print(neuron(neuron(0.25, 6.0, 0.0, relu), -1.0, 0.7, relu))
+layer_outputs = np.array([[4.8, 1.21, 2.385],
+[8.9, -1.81, 0.2],
+[1.41, 1.051, 0.026]])
+print(np.sum(layer_outputs, axis=1, keepdims=True))
