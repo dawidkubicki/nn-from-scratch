@@ -1,6 +1,7 @@
 import numpy as np
-from nnfs.datasets import spiral_data
+from nnfs.datasets import spiral_data, vertical_data
 import math
+import matplotlib.pyplot as plt
 
 
 class Dense_Layer:
@@ -44,46 +45,67 @@ class Loss_Categorical_Cross_Entropy(Loss):
         return neg_log_likehood
 
 # Create dataset
-X, y = spiral_data(samples=100, classes=3)
+# X, y = spiral_data(samples=100, classes=3)
+X, y = vertical_data(samples=100, classes=3)
+
+# plt.scatter(X[:,0], X[:, 1], c=y, cmap='brg')
+# plt.show()
+
 
 dense_layer = Dense_Layer(2, 3)
-dense_layer.forward(X)
-
-activation_relu = Activation_ReLU()
-activation_relu.forward(dense_layer.output)
-
 dense_layer2 = Dense_Layer(3, 3)
-dense_layer2.forward(activation_relu.output)
-
+activation_relu = Activation_ReLU()
 activation_softmax = Activation_Softmax()
-activation_softmax.forward(dense_layer2.output)
+loss_function = Loss_Categorical_Cross_Entropy()
 
-loss = Loss_Categorical_Cross_Entropy()
-loss = loss.calculate(activation_softmax.output, y)
+best_dl_weights = dense_layer.weights.copy()
+best_dl_biases = dense_layer.biases.copy()
+best_dl_weights2 = dense_layer2.weights.copy()
+best_dl_biases2 = dense_layer2.biases.copy()
+
+learning_rate = 0.5
+lowest_loss = 999999
+
+for i in range(10000):
+
+    dense_layer.weights += learning_rate*np.random.randn(2, 3) 
+    dense_layer.biases += learning_rate*np.random.randn(1, 3) 
+    dense_layer2.weights += learning_rate*np.random.randn(3, 3) 
+    dense_layer2.biases += learning_rate*np.random.randn(1, 3) 
+
+    dense_layer.forward(X)
+    activation_relu.forward(dense_layer.output)
+    dense_layer2.forward(activation_relu.output)
+    activation_softmax.forward(dense_layer2.output)
+
+    loss = loss_function.calculate(activation_softmax.output, y)
+    preds = np.argmax(activation_softmax.output, axis=1)
+
+    acc = 0
+    if len(y.shape) == 1:
+        for pred, real in zip(preds, y):
+            if pred == real:
+                acc+=1
+        acc_value = (acc / len(y))*100
+
+    elif len(y.shape) == 2:
+        y_pos = np.argmax(y, axis=1)
+        for pred, real in zip(preds, y_pos):
+            if (pred==real):
+                acc+=1
+        acc_value = np.mean(preds==y_pos)
+
+    if loss < lowest_loss:
+        print(f"New set of weights has been found! Iteration: {i+1} Loss: {loss} Accuracy: {acc_value:.2f}% | {acc}/{len(y)}")
+        best_dl_weights = dense_layer.weights.copy()
+        best_dl_biases = dense_layer.biases.copy()
+        best_dl_weights2 = dense_layer2.weights.copy()
+        best_dl_biases2 = dense_layer2.biases.copy()
+        lowest_loss = loss
+    else:
+        dl_weights = best_dl_weights.copy()
+        dl_biases = best_dl_biases.copy()
+        dl_weights2 = best_dl_weights2.copy()
+        dl_biases2 = best_dl_biases2.copy()
 
 
-# for len of class target shape = 1
-sample_outputs = np.array([[0.8, 0.05, 0.15],
-                  [0.3, 0.4, 0.3],
-                  [0.15, 0.65, 0.1]])
-class_targets = np.array([[1, 0, 0],
-                           [0, 0, 1],
-                           [0, 1, 0]])
-
-preds = np.argmax(sample_outputs, axis=1)
-
-acc = 0
-if len(class_targets.shape) == 1:
-    for pred, real in zip(preds, class_targets):
-        if pred == real:
-            acc+=1
-    acc_value = (acc / len(class_targets))*100
-    print(f"{acc_value:.2f}% | {acc}/{len(class_targets)}")
-
-elif len(class_targets.shape) == 2:
-    class_targets_pos = np.argmax(class_targets, axis=1)
-    for pred, real in zip(preds, class_targets_pos):
-        if (pred==real):
-            acc+=1
-    acc_value = np.mean(preds==class_targets_pos)
-    print(f"{acc_value:.2f}% | {acc}/{len(class_targets)}")
