@@ -20,6 +20,11 @@ class Activation_Softmax:
         exp_values = np.exp(inputs-np.max(inputs, axis=1, keepdims=True))
         self.output = exp_values/np.sum(exp_values, axis=1, keepdims=True)
 
+class Activation_Log_Softmax:
+    def forward(self, inputs):
+        exp_values = np.exp(inputs-np.max(inputs, axis=1, keepdims=True))
+        self.output = np.log(exp_values/np.sum(exp_values, axis=1, keepdims=True))
+
 class Loss:
     def calculate(self, output, y):
         sample_losses = self.forward(output, y)
@@ -61,22 +66,24 @@ loss = loss.calculate(activation_softmax.output, y)
 sample_outputs = np.array([[0.8, 0.05, 0.15],
                   [0.3, 0.4, 0.3],
                   [0.15, 0.65, 0.1]])
-class_targets = np.array([0, 0, 1])
+class_targets = np.array([[1, 0, 0],
+                           [0, 0, 1],
+                           [0, 1, 0]])
 
 preds = np.argmax(sample_outputs, axis=1)
 
 acc = 0
-for pred, real in zip(preds, class_targets):
-    if pred == real:
-        acc+=1
-acc_value = (acc / len(class_targets))*100
-print(f"{acc_value}% | {acc}/{len(class_targets)}")
+if len(class_targets.shape) == 1:
+    for pred, real in zip(preds, class_targets):
+        if pred == real:
+            acc+=1
+    acc_value = (acc / len(class_targets))*100
+    print(f"{acc_value:.2f}% | {acc}/{len(class_targets)}")
 
-# for len of class target shape = 1 
-# sample_outputs = np.array([[0.8, 0.05, 0.15],
-#                   [0.4, 0.3, 0.3],
-#                   [0.15, 0.65, 0.1]])
-# class_targets = np.array([[1, 0, 0],
-#                           [1, 0, 0],
-#                           [0, 1, 0]])
-
+elif len(class_targets.shape) == 2:
+    class_targets_pos = np.argmax(class_targets, axis=1)
+    for pred, real in zip(preds, class_targets_pos):
+        if (pred==real):
+            acc+=1
+    acc_value = np.mean(preds==class_targets_pos)
+    print(f"{acc_value:.2f}% | {acc}/{len(class_targets)}")
